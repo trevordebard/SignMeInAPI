@@ -26,7 +26,7 @@ const createRoom = (room, cb) => {
     if (err) {
       return cb(err);
     } else {
-      cb(null, `Room ${room} has been created`);
+      cb(null, {room: room, success: true, message: `Room ${room} successfully added`});
     }
   });
 }
@@ -39,12 +39,14 @@ const createRoom = (room, cb) => {
 const getUsers = (room, cb) => {
   client.query(`SELECT name FROM users WHERE roomid='${room}'`, (err, result) => {
     if (err) {
-      return cb(err);
+      cb(err, {success: false, error: err, message: 'There was an error retreiving users from the database. Make sure you inputed the correct room code'});
     }
     if (result.rows.length == 0) {
-      return cb('no record');
+      cb(null, {success: true, result: null, message: `Room ${room} currently has no users, or that room does not exist`});
     }
-    cb(null, result.rows);
+    else {
+      cb(null, {success: true, result: result.rows});
+    }
   });
 };
 
@@ -74,41 +76,40 @@ const addUser = (room, user, session, cb) => {
 const addUser = (room, user, cb) => {
   client.query(`INSERT INTO users (name, roomid) VALUES ('${user}', '${room}');`, (err, result) => {
     if (err) {
-      console.log(err);
-      return cb(err);
+      return cb(err, {success: false, user: user, room: room, message: `Error adding ${user} to room ${room}`});
     }
-    cb(null, `${user} was successfully added to room ${room}`);
+    else {
+      cb(null, {name: user, success: true, message:`${user} was successfully added to room ${room}`});
+    }
   });
 };
-
 
 const doesRoomExist = (room, cb) => {
   client.query(`SELECT roomid FROM rooms WHERE roomid='${room}';`, (err, result) => {
     if (err) {
-      return cb(err, false);
+      return cb(err, null);
     }
     if (result.rows.length == 0) {
-      return cb(null, false)
+      return cb(null, {success: true, exists: false})
     }
     if (result.rows.length == 1) {
-      return cb(null, true)
+      return cb(null, {success: true, exists: true})
     }
-    cb(null, false);
+    cb(null, {success: true, exists: false});
   })
 };
 
 const doesSessionExist = (room, session, cb) => {
-  console.log(room);
-  console.log(session);
   client.query(`SELECT session FROM users WHERE roomId = '${room}' and session = '${session}' LIMIT 1;`, (err, result) => {
     if (err) {
-      return cb(err, false);
+      return cb(err, null);
     }
-    console.log(`Sessions: ${result.rows}`);
     if (result.rows.length > 0) {
-      return cb(null, true);
+      return cb(null, {success: true, exists: true});
     }
-    return cb(null, false);
+    else {
+      return cb(null, {success: true, exists: false});
+    }
   })
 }
 
