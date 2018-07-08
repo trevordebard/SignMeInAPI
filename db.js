@@ -95,7 +95,7 @@ const doesRoomExist = (room, cb) => {
     if (result.rows.length == 1) {
       return cb(null, {success: true, exists: true})
     }
-    cb(null, {success: true, exists: false});
+    cb(null, {success: true, exists: false, roomCode: room});
   })
 };
 
