@@ -67,11 +67,10 @@ app.get('/api/getUsers/:roomId', (req, res) => {
             res.json(response)
         }
         else {
-            res.json(response.result);
+            res.json(response);
         }
     })
 });
-
 /**
  * Need to add a third parameter for sessions once that is set up
  */
