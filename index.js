@@ -45,7 +45,7 @@ app.get('/api/doesRoomExist/:roomId', (req, res) => {
 app.get('/api/createRoom/:roomId', (req, res) => {
     roomId = req.params.roomId;
     db.createRoom(roomId, (err, response) => {
-        if (err || !response) {
+        if (err) {
             console.log(`Error inserting ${roomId} into the database`);
             res.json(err);
         }

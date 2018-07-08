@@ -24,7 +24,7 @@ const connect = () => {
 const createRoom = (room, cb) => {
   client.query(`INSERT INTO rooms (roomId) VALUES ('${room}');`, (err, res) => {
     if (err) {
-      return cb(err);
+      cb(err);
     } else {
       cb(null, {room: room, success: true, message: `Room ${room} successfully added`});
     }
