@@ -42,9 +42,17 @@ app.get('/api/doesRoomExist/:roomId', (req, res) => {
     });
 });
 
-app.get('/api/createRoom/:roomId', (req, res) => {
+app.get('/api/createRoom/:roomId/:uuid/:name/:phone/:email', (req, res) => {
     roomId = req.params.roomId;
-    db.createRoom(roomId, (err, response) => {
+    uuid = req.params.uuid;
+    name = req.params.name;
+    phone = req.params.phone;
+    email = req.params.email;
+    console.log(uuid)
+    console.log(name)
+    console.log(phone)
+    console.log(email)
+    db.createRoom(roomId, uuid, name, phone, email, (err, response) => {
         if (err) {
             console.log(`Error inserting ${roomId} into the database`);
             res.json(err);
@@ -54,6 +62,20 @@ app.get('/api/createRoom/:roomId', (req, res) => {
         }
     })
 });
+
+app.get('/api/didCreateRoom/:roomId/:uuid', (req, res) => {
+    roomId = req.params.roomId;
+    uuid = req.params.uuid;
+    db.didCreateRoom(roomId, uuid, (err, response) => {
+        if (err) {
+            console.log(`Error determining if user created room ${roomId}`);
+            res.json(err);
+        }
+        else {
+            res.json(response);
+        }
+    })
+})
 
 app.get('/api/getUsers/:roomId', (req, res) => {
     roomId = req.params.roomId;
