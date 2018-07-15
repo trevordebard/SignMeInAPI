@@ -21,39 +21,15 @@ const connect = () => {
  * @param {string} room the room to be created
  * @param {function} cb the callbackfunction
  */
-const createRoom = (room, uuid, name, phone, email, cb) => {
-  client.query(`INSERT INTO rooms (roomId, uuid, reqName, reqPhone, reqEmail) VALUES ('${room}', '${uuid}','${name}','${phone}', '${email}');`, (err, res) => {
+const createRoom = (room, cb) => {
+  client.query(`INSERT INTO rooms (roomId) VALUES ('${room}');`, (err, res) => {
     if (err) {
-      console.log(err)
       cb(err);
     } else {
       cb(null, {room: room, success: true, message: `Room ${room} successfully added`});
     }
   });
 }
-const didCreateRoom = (roomId, uuid, cb) => {
-  client.query(`SELECT uuid FROM rooms WHERE roomid='${roomId}';`, (err, result) => {
-    if (err) {
-      return cb(err, null);
-    }
-    if (result.rows.length == 0) {
-      return cb(null, {success: true, exists: false})
-    }
-    if (result.rows.length == 1) {
-      let resUUID = result.rows[0].uuid;
-      console.log(resUUID);
-      if(resUUID === uuid) {
-        return cb(null, {success: true, didCreate: true})
-      }
-      else {
-        return cb(null, {success: true, didCreate: false})
-      }
-    }
-    else {
-      return cb(null, {success: true, didCreate: false})
-    }
-  })
-};
 
 /**
  * Retrieve a list of users for a given room
@@ -130,7 +106,7 @@ const doesRoomExist = (room, cb) => {
       return cb(null, {success: true, exists: false})
     }
     if (result.rows.length == 1) {
-      return cb(null, {success: true, exists: true, roomCode: room})
+      return cb(null, {success: true, exists: true})
     }
     cb(null, {success: true, exists: false, roomCode: room});
   })
@@ -176,7 +152,5 @@ module.exports = {
   getUsers,
   addUser,
   doesRoomExist,
-  doesSessionExist,
-  didCreateRoom,
-  getRequiredParams
+  doesSessionExist
 };
