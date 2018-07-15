@@ -37,7 +37,7 @@ const createRoom = (room, cb) => {
  * @param {function} cb 
  */
 const getUsers = (room, cb) => {
-  client.query(`SELECT name FROM users WHERE roomid='${room}'`, (err, result) => {
+  client.query(`SELECT name, firstname, lastname, email, phone FROM users WHERE roomid='${room}'`, (err, result) => {
     if (err) {
       cb(err, {success: false, error: err, message: 'There was an error retreiving users from the database. Make sure you inputed the correct room code'});
     }
@@ -49,7 +49,6 @@ const getUsers = (room, cb) => {
     }
   });
 };
-
 /**
  * ONCE SESSIONS ARE WORKING
  * Add a user to a given room
@@ -73,13 +72,27 @@ const addUser = (room, user, session, cb) => {
  * @param {string} user 
  * @param {function} cb 
  */
-const addUser = (room, user, cb) => {
-  client.query(`INSERT INTO users (name, roomid) VALUES ('${user}', '${room}');`, (err, result) => {
+const addUser = (room, firstName, lastName, phone, email, cb) => {
+  if(!phone && !email) {
+    queryString = `INSERT INTO users (firstname, lastname, roomid) VALUES ('${firstName}', '${lastName}', '${room}')`
+  }
+  else if(phone) {
+    if(email) {
+      queryString = `INSERT INTO users (firstname, lastname, roomid, phone, email) VALUES ('${firstName}', '${lastName}', '${room}', '${phone}', '${email}')`
+    }
+    else {
+      queryString = `INSERT INTO users (firstname, lastname, roomid, phone) VALUES ('${firstName}', '${lastName}', '${room}', '${phone}')`
+    }
+  }
+  else if(email) {
+    queryString = `INSERT INTO users (firstname, lastname, roomid, email) VALUES ('${firstName}', '${lastName}', '${room}', '${email}')`
+  }
+  client.query(queryString, (err, result) => {
     if (err) {
       return cb(err, {success: false, user: user, room: room, message: `Error adding ${user} to room ${room}`});
     }
     else {
-      cb(null, {name: user, success: true, message:`${user} was successfully added to room ${room}`});
+      cb(null, {name: firstName + lastName, success: true, message:`${firstName+lastName} was successfully added to room ${room}`});
     }
   });
 };
@@ -112,6 +125,24 @@ const doesSessionExist = (room, session, cb) => {
     }
   })
 }
+const getRequiredParams = (roomId, cb) => {
+  console.log(roomId);
+  client.query(`SELECT reqname, reqphone, reqemail FROM rooms WHERE roomid='${roomId}'`, (err, result) => {
+    if (err) {
+      console.log('error')
+      cb(err, {success: false, error: err, message: 'There was an error retreiving params from the database.'});
+    }
+    if (result.rows.length == 0) {
+      cb(null, {success: true, result: null, message: `No results getting params`});
+    }
+    else if(result.rows.length == 1){
+      cb(null, {success: true, result: result.rows[0]});
+    }
+    else {
+      cb(null, {success: true, result: null, message: 'Error. too many results.'})
+    }
+  });
+};
 
 
 
