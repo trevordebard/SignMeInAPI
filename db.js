@@ -61,7 +61,7 @@ const didCreateRoom = (roomId, uuid, cb) => {
  * @param {function} cb 
  */
 const getUsers = (room, cb) => {
-  client.query(`SELECT name FROM users WHERE roomid='${room}'`, (err, result) => {
+  client.query(`SELECT name, firstname, lastname, email, phone FROM users WHERE roomid='${room}'`, (err, result) => {
     if (err) {
       cb(err, {success: false, error: err, message: 'There was an error retreiving users from the database. Make sure you inputed the correct room code'});
     }
@@ -96,27 +96,27 @@ const addUser = (room, user, session, cb) => {
  * @param {string} user 
  * @param {function} cb 
  */
-const addUser = (room, user, phone, email, cb) => {
+const addUser = (room, firstName, lastName, phone, email, cb) => {
   if(!phone && !email) {
-    queryString = `INSERT INTO users (name, roomid) VALUES ('${user}', '${room}')`
+    queryString = `INSERT INTO users (firstname, lastname, roomid) VALUES ('${firstName}', '${lastName}', '${room}')`
   }
   else if(phone) {
     if(email) {
-      queryString = `INSERT INTO users (name, roomid, phone, email) VALUES ('${user}', '${room}', '${phone}', '${email}')`
+      queryString = `INSERT INTO users (firstname, lastname, roomid, phone, email) VALUES ('${firstName}', '${lastName}', '${room}', '${phone}', '${email}')`
     }
     else {
-      queryString = `INSERT INTO users (name, roomid, phone) VALUES ('${user}', '${room}', '${phone}')`
+      queryString = `INSERT INTO users (firstname, lastname, roomid, phone) VALUES ('${firstName}', '${lastName}', '${room}', '${phone}')`
     }
   }
   else if(email) {
-    queryString = `INSERT INTO users (name, roomid, email) VALUES ('${user}', '${room}', '${email}')`
+    queryString = `INSERT INTO users (firstname, lastname, roomid, email) VALUES ('${firstName}', '${lastName}', '${room}', '${email}')`
   }
   client.query(queryString, (err, result) => {
     if (err) {
       return cb(err, {success: false, user: user, room: room, message: `Error adding ${user} to room ${room}`});
     }
     else {
-      cb(null, {name: user, success: true, message:`${user} was successfully added to room ${room}`});
+      cb(null, {name: firstName + lastName, success: true, message:`${firstName+lastName} was successfully added to room ${room}`});
     }
   });
 };

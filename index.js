@@ -98,11 +98,23 @@ app.get('/api/getUsers/:roomId', (req, res) => {
  */
 app.get('/api/addUser', (req, res) => {
     roomId = req.query.roomId;
-    name = req.query.name;
+    name = (req.query.name).split(' ');
+    let firstName;
+    let lastName;
+    if(name.length > 1) {
+        firstName = name[0];
+        lastName = name.slice(1, name.length).join(' ');
+    }
+    else {
+        firstName = name[0];
+        lastName = 'empty';
+    }
+    console.log(firstName);
+    console.log(lastName);
     phone = req.query.phone;
     email = req.query.email;
     console.log(phone);
-    db.addUser(roomId, name, phone, email, (err, response) => {
+    db.addUser(roomId, firstName, lastName, phone, email, (err, response) => {
         if (err) {
             console.log(`Error adding ${response.name} to room ${response.room}`)
             res.json(response)
