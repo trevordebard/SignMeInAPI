@@ -96,10 +96,13 @@ app.get('/api/getUsers/:roomId', (req, res) => {
 /**
  * Need to add a third parameter for sessions once that is set up
  */
-app.get('/api/addUser/:roomId/:name', (req, res) => {
-    roomId = req.params.roomId;
-    name = req.params.name;
-    db.addUser(roomId, name, (err, response) => {
+app.get('/api/addUser', (req, res) => {
+    roomId = req.query.roomId;
+    name = req.query.name;
+    phone = req.query.phone;
+    email = req.query.email;
+    console.log(phone);
+    db.addUser(roomId, name, phone, email, (err, response) => {
         if (err) {
             console.log(`Error adding ${response.name} to room ${response.room}`)
             res.json(response)
@@ -115,6 +118,18 @@ app.get('/api/doesSessionExist/:roomId/:sessionId', (req, res) => {
     db.doesSessionExist(roomId, sessionId, (err, response) => {
         if (err || !response) {
             console.log('Whoops It appears that session does not exist.');
+            res.json(err);
+        } else {
+            res.json(response);
+        }
+    });
+});
+
+app.get('/api/getRequiredParams/:roomId', (req, res) => {
+    roomId = req.params.roomId;
+    db.getRequiredParams(roomId, (err, response) => {
+        if (err) {
+            console.log('Error getting required params');
             res.json(err);
         } else {
             res.json(response);

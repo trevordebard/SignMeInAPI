@@ -73,7 +73,6 @@ const getUsers = (room, cb) => {
     }
   });
 };
-
 /**
  * ONCE SESSIONS ARE WORKING
  * Add a user to a given room
@@ -97,8 +96,22 @@ const addUser = (room, user, session, cb) => {
  * @param {string} user 
  * @param {function} cb 
  */
-const addUser = (room, user, cb) => {
-  client.query(`INSERT INTO users (name, roomid) VALUES ('${user}', '${room}');`, (err, result) => {
+const addUser = (room, user, phone, email, cb) => {
+  if(!phone && !email) {
+    queryString = `INSERT INTO users (name, roomid) VALUES ('${user}', '${room}')`
+  }
+  else if(phone) {
+    if(email) {
+      queryString = `INSERT INTO users (name, roomid, phone, email) VALUES ('${user}', '${room}', '${phone}', '${email}')`
+    }
+    else {
+      queryString = `INSERT INTO users (name, roomid, phone) VALUES ('${user}', '${room}', '${phone}')`
+    }
+  }
+  else if(email) {
+    queryString = `INSERT INTO users (name, roomid, email) VALUES ('${user}', '${room}', '${email}')`
+  }
+  client.query(queryString, (err, result) => {
     if (err) {
       return cb(err, {success: false, user: user, room: room, message: `Error adding ${user} to room ${room}`});
     }
@@ -136,6 +149,24 @@ const doesSessionExist = (room, session, cb) => {
     }
   })
 }
+const getRequiredParams = (roomId, cb) => {
+  console.log(roomId);
+  client.query(`SELECT reqname, reqphone, reqemail FROM rooms WHERE roomid='${roomId}'`, (err, result) => {
+    if (err) {
+      console.log('error')
+      cb(err, {success: false, error: err, message: 'There was an error retreiving params from the database.'});
+    }
+    if (result.rows.length == 0) {
+      cb(null, {success: true, result: null, message: `No results getting params`});
+    }
+    else if(result.rows.length == 1){
+      cb(null, {success: true, result: result.rows[0]});
+    }
+    else {
+      cb(null, {success: true, result: null, message: 'Error. too many results.'})
+    }
+  });
+};
 
 
 
@@ -146,5 +177,6 @@ module.exports = {
   addUser,
   doesRoomExist,
   doesSessionExist,
-  didCreateRoom
+  didCreateRoom,
+  getRequiredParams
 };
