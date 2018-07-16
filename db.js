@@ -152,5 +152,6 @@ module.exports = {
   getUsers,
   addUser,
   doesRoomExist,
-  doesSessionExist
+  doesSessionExist,
+  getRequiredParams,
 };
