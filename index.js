@@ -11,17 +11,18 @@ const server = app.listen(port, () => {
     console.log(`listening for requests on port ${port}`);
 });
 // Add headers
-app.use(function(req, res, next) {
-    var allowedOrigins = ['http://localhost:4006', 'http://signmein.org', 'http://signmein.trevordebard.com', 'https://signmein.trevordebard.com'];
-    var origin = req.headers.origin;
-    if(allowedOrigins.indexOf(origin) > -1){
-         res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    //res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:8020');
-    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', true);
-    return next();
+  app.use(function(req, res, next){
+    var whitelist = ['http://localhost:4006', 'http://signmein.org', 'http://signmein.trevordebard.com', 'http://signmein.trevordebard.com'];
+
+    var host = req.get('host');
+  
+    whitelist.forEach(function(val, key){
+      if (host.indexOf(val) > -1){
+        res.setHeader('Access-Control-Allow-Origin', host);
+      }
+    })
+  
+    next();
   });
 
 app.get('/api/doesRoomExist/:roomId', (req, res) => {
