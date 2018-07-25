@@ -42,14 +42,12 @@ app.get('/api/doesRoomExist/:roomId', (req, res) => {
     });
 });
 
-app.get('/api/createRoom/:roomId/:uuid/:name/:phone/:email', (req, res) => {
+app.get('/api/createRoom/:roomId/:uuid', (req, res) => {
     roomId = req.params.roomId;
     uuid = req.params.uuid;
-    name = req.params.name;
-    phone = req.params.phone;
-    email = req.params.email;
-
-    db.createRoom(roomId, uuid, name, phone, email, (err, response) => {
+    const reqs = req.query.params;
+    
+    db.createRoom(roomId, uuid, reqs, (err, response) => {
         if (err) {
             console.log(`Error inserting ${roomId} into the database`);
             res.json(err);
@@ -76,6 +74,7 @@ app.get('/api/didCreateRoom/:roomId/:uuid', (req, res) => {
 
 app.get('/api/getUsers/:roomId', (req, res) => {
     roomId = req.params.roomId;
+    
     db.getUsers(roomId, (err, response) => {
         if (err) {
             console.log(`Error getting users for room ${roomId}`);
@@ -95,7 +94,8 @@ app.get('/api/getUsers/:roomId', (req, res) => {
  */
 app.get('/api/addUser', (req, res) => {
     roomId = req.query.roomId;
-    name = (req.query.name).split(' ');
+    let reqs = JSON.parse(req.query.reqs);
+    name = (reqs[0].name).split(' ');
     let firstName;
     let lastName;
     if(name.length > 1) {
@@ -106,14 +106,12 @@ app.get('/api/addUser', (req, res) => {
         firstName = name[0];
         lastName = 'empty';
     }
+    reqs.splice(0, 1);
+    reqs=JSON.stringify(reqs);
     console.log(firstName);
-    console.log(lastName);
-    phone = req.query.phone;
-    email = req.query.email;
-    console.log(phone);
-    db.addUser(roomId, firstName, lastName, phone, email, (err, response) => {
+    db.addUser(roomId, firstName, lastName, reqs, (err, response) => {
         if (err) {
-            console.log(`Error adding ${response.name} to room ${response.room}`)
+            console.log(response.message)
             res.json(response)
         } else {
             res.json(response)
