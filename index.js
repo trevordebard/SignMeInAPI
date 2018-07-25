@@ -11,17 +11,9 @@ const server = app.listen(port, () => {
     console.log(`listening for requests on port ${port}`);
 });
 // Add headers
-  app.use(function(req, res, next){
-    var whitelist = ['http://localhost:4006', 'http://signmein.org', 'http://signmein.trevordebard.com', 'http://signmein.trevordebard.com'];
-
-    var host = req.get('host');
-  
-    whitelist.forEach(function(val, key){
-      if (host.indexOf(val) > -1){
-        res.setHeader('Access-Control-Allow-Origin', host);
-      }
-    })
-  
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
   });
 
