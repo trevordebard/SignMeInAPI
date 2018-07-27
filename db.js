@@ -21,8 +21,8 @@ const connect = () => {
  * @param {string} room the room to be created
  * @param {function} cb the callbackfunction
  */
-const createRoom = (room, uuid, reqs, cb) => {
-  client.query(`INSERT INTO rooms (roomId, uuid, reqs) VALUES ('${room}', '${uuid}','${reqs}');`, (err, res) => {
+const createRoom = (room, uuid, name, phone, email, cb) => {
+  client.query(`INSERT INTO rooms (roomId, uuid, reqName, reqPhone, reqEmail) VALUES ('${room}', '${uuid}','${name}','${phone}', '${email}');`, (err, res) => {
     if (err) {
       console.log(err)
       cb(err);
@@ -61,7 +61,7 @@ const didCreateRoom = (roomId, uuid, cb) => {
  * @param {function} cb 
  */
 const getUsers = (room, cb) => {
-  client.query(`SELECT reqs, firstname, lastname FROM users WHERE roomid='${room}'`, (err, result) => {
+  client.query(`SELECT name, firstname, lastname, email, phone FROM users WHERE roomid='${room}'`, (err, result) => {
     if (err) {
       cb(err, {success: false, error: err, message: 'There was an error retreiving users from the database. Make sure you inputed the correct room code'});
     }
@@ -69,18 +69,26 @@ const getUsers = (room, cb) => {
       cb(null, {success: true, result: null, message: `Room ${room} currently has no users, or that room does not exist`});
     }
     else {
-      let users = result.rows;
-      users.forEach((element) => {
-        element.reqs = JSON.parse(element.reqs)
-        element.reqs.forEach((req) => {
-          element[Object.keys(req)[0]] = req[Object.keys(req)[0]]; 
-        })
-        delete element.reqs
-      })
-      cb(null, {success: true, result: users});
+      cb(null, {success: true, result: result.rows});
     }
   });
 };
+/**
+ * ONCE SESSIONS ARE WORKING
+ * Add a user to a given room
+ * @param {string} room 
+ * @param {string} user 
+ * @param {function} cb 
+ *
+const addUser = (room, user, session, cb) => {
+  client.query(`INSERT INTO users (name, roomid, session) VALUES ('${user}', '${room}', '${session}');`, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    cb(null, 'Insert complete');
+  });
+};
+*/
 
 /**
  * Add a user to a given room
@@ -88,15 +96,27 @@ const getUsers = (room, cb) => {
  * @param {string} user 
  * @param {function} cb 
  */
-const addUser = (room, firstname, lastname, reqs, cb) => {
-  
-  queryString = `INSERT INTO users (reqs, roomid, firstname, lastname) VALUES ('${reqs}', '${room}', '${firstname}', '${lastname}')`
-  client.query(queryString, (err, result) => {
-    if (err) {
-      return cb(err, {success: false, room: room, message: `Error adding ${firstname} to room ${room}`});
+const addUser = (room, firstName, lastName, phone, email, cb) => {
+  if(!phone && !email) {
+    queryString = `INSERT INTO users (firstname, lastname, roomid) VALUES ('${firstName}', '${lastName}', '${room}')`
+  }
+  else if(phone) {
+    if(email) {
+      queryString = `INSERT INTO users (firstname, lastname, roomid, phone, email) VALUES ('${firstName}', '${lastName}', '${room}', '${phone}', '${email}')`
     }
     else {
-      cb(null, {reqs: reqs, success: true, message:`${reqs} was successfully added to room ${room}`});
+      queryString = `INSERT INTO users (firstname, lastname, roomid, phone) VALUES ('${firstName}', '${lastName}', '${room}', '${phone}')`
+    }
+  }
+  else if(email) {
+    queryString = `INSERT INTO users (firstname, lastname, roomid, email) VALUES ('${firstName}', '${lastName}', '${room}', '${email}')`
+  }
+  client.query(queryString, (err, result) => {
+    if (err) {
+      return cb(err, {success: false, user: user, room: room, message: `Error adding ${user} to room ${room}`});
+    }
+    else {
+      cb(null, {name: firstName + lastName, success: true, message:`${firstName+lastName} was successfully added to room ${room}`});
     }
   });
 };
@@ -131,7 +151,7 @@ const doesSessionExist = (room, session, cb) => {
 }
 const getRequiredParams = (roomId, cb) => {
   console.log(roomId);
-  client.query(`SELECT reqs FROM rooms WHERE roomid='${roomId}'`, (err, result) => {
+  client.query(`SELECT reqname, reqphone, reqemail FROM rooms WHERE roomid='${roomId}'`, (err, result) => {
     if (err) {
       console.log('error')
       cb(err, {success: false, error: err, message: 'There was an error retreiving params from the database.'});
