@@ -45,8 +45,11 @@ app.get('/api/doesRoomExist/:roomId', (req, res) => {
 app.get('/api/createRoom/:roomId/:uuid', (req, res) => {
     roomId = req.params.roomId;
     uuid = req.params.uuid;
-    const reqs = req.query.params;
-    
+    let reqs = JSON.parse(req.query.params);
+    for(let i = 0; i < reqs.length; i++) {
+        reqs[i] = reqs[i].split(' ').join('-');
+    }
+    reqs = JSON.stringify(reqs);
     db.createRoom(roomId, uuid, reqs, (err, response) => {
         if (err) {
             console.log(`Error inserting ${roomId} into the database`);
